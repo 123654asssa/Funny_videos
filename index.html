@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Kamera ruxsati</title>
+</head>
+<body>
+    <h2>Kamerani yoqish</h2>
+    <video id="video" width="300" autoplay></video>
+    <br><br>
+    <button onclick="takePhoto()">Rasmga olish</button>
+    <br><br>
+    <canvas id="canvas" width="300" height="225"></canvas>
+
+    <script>
+        // Kamera ochish
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                document.getElementById('video').srcObject = stream;
+            })
+            .catch(err => {
+                alert("Kameraga ruxsat berilmadi!");
+            });
+
+        // Rasmga olish
+        function takePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
+s
